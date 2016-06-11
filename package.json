@@ -1,0 +1,22 @@
+{
+  "name": "solo-project-mao",
+  "version": "1.0.0",
+  "description": "Online Card Game",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/app.js"
+  },
+  "author": "Pat Kahnke",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "bootstrap": "^3.3.6",
+    "express": "^4.13.4",
+    "jquery": "^1.7.4",
+    "mongoose": "^4.4.20",
+    "path": "^0.12.7",
+    "socket.io": "^1.4.6",
+    "socket.io-client": "^1.4.6"
+  }
+}

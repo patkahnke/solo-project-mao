@@ -1,0 +1,61 @@
+<!doctype html>
+<html
+  <head>
+    <title>Mao - the Online Card Game</title>
+    <link rel="stylesheet" href="/vendors/bootstrap.min.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
+    <script type="text/javascript" src="/vendors/socket.io.js"></script>
+    <script type="text/javascript" src="/vendors/jquery.min.js"></script>
+    <script type="text/javascript" src="/scripts/clientapp.js"></script>
+  </head>
+  <body>
+    <!-- <div class=jumbotron>
+      <h2>It's a game... It's a puzzle...</h2>
+      <h2>It's...</h2>
+      <h1>Mao</h1>
+    </div> -->
+    <div class="container">
+      <div class="com-md-5">
+      </div>
+      <form ID="player-input-form" class="col-md-2">
+      <label for="nickname">Input a Nickname:</label>
+      <input type="text" id="nickname" name="nickname" />
+      <button ID="player-input-button">Submit Nickname</button>
+      </form>
+      <div class="col-md-5">
+      </div>
+    </div>
+    <div class="container">
+      <div class="player-left col-md-3">
+        <h1 class="player-left-name"></h1>
+      </div>
+      <div class="col-md-6">
+      </div>
+      <div class="player-right col-md-3">
+        <h1 class="player-right-name"></h1>
+      </div>
+    </div>
+    <div class="container">
+      <div class="col-md-5">
+      </div>
+      <div class="col-md-2">
+      <h1>Dealer Card</h1>
+      <p id="table"></p>
+      </div>
+      <div class="col-md-5">
+      </div>
+    </div>
+    <div class="container">
+      <div class="col-md-3">
+      </div>
+      <div class="player-hand col-md-7">
+        <p>Cards in your hand:</p>
+        <p id="hand"></p>
+      </div>
+      <div class="col-md-2">
+      </div>
+    </div>
+    </div>
+    <div>
+  </body>
+</html>
