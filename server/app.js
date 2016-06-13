@@ -25,6 +25,10 @@ var tableReady = false;
 var cardsOnTable = table.cardsOnTable;
 var players = table.players;
 var targetCard = [];
+var player = {};
+var directionLeft = true;
+var directionChangeCount = game.randomNumber(5, 12);
+var playCount = 0;
 
 //socket.io functions
 io.on('connection', function (socket) {
@@ -32,51 +36,58 @@ io.on('connection', function (socket) {
 
   socket.on('playerLoggedIn', function (data) {
     var player = new Player(socket.id);
-    player.nickname = data.nickname;
-    console.log(player.nickname);
-
-    //turn this into a Table prototype(tableAvailable) function later
-    //refactor this so it instantiates a new Table once the table is full
-    if (players.length < playerLimit) {
-      players.push(player);
-      console.log('player added to table: number of players:', players.length);
-    } else {
-      //io.to(player).emit('chat message', 'Sorry - the table is full');
-      console.log('player could not be added - table full');
-      return;
-    };
-
-    if (players.length == playerLimit) {
-      tableReady = true;
-      console.log('table ready: number of players:', players.length);
-      game.setupTable(deck, table, game, io, players);
-    };
+    game.seatNewPlayers(socket, table, players, data, game, deck, io, player);
   });
 
   socket.on('playCard', function (data) {
+    players = data.players;
+    var playerIndex = data.playerIndex;
+    var playerLeftIndex = data.playerLeftIndex;
+    var playerRightIndex = data.playerRightIndex;
     targetCard = game.currentTargetCard(table)[0];
-    console.log('target card', game.currentTargetCard(table)[0]);
     card = data.playedCard;
     legal = game.isCardLegal(card, targetCard);
-    if (legal == true) {
-      console.log('card is legal');
+    playCount++;
+    console.log('direction change count: ', directionChangeCount);
+    console.log('playCount', playCount);
+    console.log('directionLeft ', directionLeft);
+    directionLeft = game.controlDirection(game, playCount, directionChangeCount, directionLeft);
+    if (players[playerIndex].turn) {
+      if (legal == true) {
+        players[playerIndex].hand = game.playCard(data.index, players[playerIndex].hand, table);
+        targetCard = game.currentTargetCard(table)[0];
+        console.log('card is legal');
+        players[playerIndex].turn = false;
+        if (directionLeft) {
+          players[playerLeftIndex].turn = true;
+        } else {
+          players[playerRightIndex].turn = true;
+        }
+
+        table.players = players;
+        io.emit('play', { players: players, targetCard: targetCard });
+      } else {
+        players[playerIndex].hand = game.dealCards(deck, 1, players[playerIndex].hand);
+        players[playerIndex].turn = false;
+        players[data.playerLeftIndex].turn = true;
+        table.players = players;
+        console.log('card is not legal');
+        io.emit('play', { players: players, targetCard: targetCard });
+        console.log(players[playerIndex].nickname + ' played out of turn!');
+      };
     } else {
-      console.log('card is not legal');
+      players[playerIndex].hand = game.dealCards(deck, 1, players[playerIndex].hand);
+      table.players = players;
+      console.log(players[playerIndex].nickname + ' played out of turn!');
+      io.emit('play', { players: players, targetCard: targetCard });
     };
   });
 
-});
+  socket.on('chat message', function (msg) {
+    io.emit('chat message', msg);
+  });
 
-// function setupTable() {
-//   if (tableReady == true) {
-//     var startCard = game.setUpStartTargetCard(deck, table);
-//     messaging.sendEventToAllPlayers('setUp', startCard, io, players);
-//     for (var i = 0; i < players.length; i++) {
-//       players[i].hand = game.dealCards(deck, 5, players[i].hand);
-//       io.to(players[i].id).emit('play', { playerIndex: i, players: players });
-//     };
-//   };
-// }
+});
 
 // middleware
 app.use(express.static(path.join(__dirname, './public')));

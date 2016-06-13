@@ -1,56 +1,38 @@
 $(document).ready(function () {
   var socket = io();
   var player = {};
+  var hand = [];
   var newPlayer = {};
   var playerLeft = {};
   var playerRight = {};
-
-  socket.on('connect', function () {
-    console.log('player connected');
-  });
+  var playerIndex = undefined;
+  var playerLeftIndex = undefined;
+  var playerRightIndex = undefined;
 
   $('#player-input-button').on('click', function () {
     setUpPlayer(event);
     socket.emit('playerLoggedIn', { nickname: newPlayer.nickname });
   });
 
-  socket.on('play', function (data) {
-    clearOutCards();
-    placeAtTable = setPlaceAtTable(data);
-    var pixel = 0;
-    player = data.players[playerIndex];
-    $('#table').append('<img width=100 src=cardImages/' + startCard + '.png>');
-    $('.player-left-name').text(data.players[placeAtTable.playerLeftIndex].nickname + ' has '
-    + data.players[placeAtTable.playerLeftIndex].hand.length + ' cards.');
-    $('.player-right-name').text(data.players[placeAtTable.playerRightIndex].nickname + ' has '
-    + data.players[placeAtTable.playerRightIndex].hand.length + ' cards.');
-    $.each(player.hand, function (key, value) {
-      var index = key + 1;
-      $('#hand').append('<button class="card' + key + '" style="margin-top:2px; margin-left: '
-      + pixel + 'px; float: left; z-index: ' + index + '"><img class=card"' + key +
-      ' width=100" src=cardImages/' + value + '.png /></button>');
-
-      $('.card' + key).click(function () {
-          playCard(key, value);
-          console.log('click is working', key, value);
-          return false;
-        });
-    });
+  socket.on('getPlayerIndex', function (data) {
+    playerIndex = data.playerIndex;
   });
 
-  // $('form').submit(function () {
-  //   socket.emit('chat message', $('#m').val());
-  //   $('#m').val('');
-  //   return false;
-  // });
-  //
-  // socket.on('chat message', function (msg) {
-  //   $('#messages').append($('<li>').text(msg));
-  // });
+  socket.on('play', function (data) {
+    clearOutCards();
+    appendCardsToDOM(data);
+    console.log('socket.on play is firing');
+  });
 
-  // socket.on('setUp', function (startCard) {
-  //   $('#table').append('<img width=100 src=cardImages/' + startCard + '.png>');
-  // });
+  $('form').submit(function () {
+    socket.emit('chat message', player.nickname + ': ' + $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+
+  socket.on('chat message', function (msg) {
+    $('#messages').append($('<li>').text(msg));
+  });
 
   //create new player in database
   function setUpPlayer(event) {
@@ -63,25 +45,20 @@ $(document).ready(function () {
     $('#player-input-form').children().val('');
     $('#player-input-form').hide();
     $.post('/players', newPlayer);
-    console.log('player from submit player form', newPlayer);
     return newPlayer;
   }
 
   function clearOutCards() {
-    $('#hand').text('');
-    $('#cards').find('option').remove().end();
+    $('#table').text('');
+    //$('#hand').text('');
+    $('#hand').empty();
+    console.log('clearOutCards is firing');
   }
 
   function setPlaceAtTable(data) {
-    var playerIndex = 0;
-    var playerLeftIndex = 0;
-    var playerRightIndex = 0;
-    var startCard = data.startCard;
-    playerIndex = data.playerIndex;
     playerLeftIndex = getPlayerLeftIndex(playerIndex);
     playerRightIndex = getPlayerRightIndex(playerIndex);
     var placeAtTable = {
-      playerIndex: playerIndex,
       playerLeftIndex: playerLeftIndex,
       playerRightIndex: playerRightIndex,
     };
@@ -104,8 +81,38 @@ $(document).ready(function () {
   }
   }
 
-  function playCard(index, playedCard) {
-    socket.emit('playCard', { playedCard: playedCard, index: index });
+  function playCard(index, playedCard, players, playerIndex) {
+    socket.emit('playCard', { playedCard: playedCard, index: index, players:
+      players, playerIndex: playerIndex, playerLeftIndex: playerLeftIndex,
+      playerRightIndex: playerRightIndex, });
+  }
+
+  function appendCardsToDOM(data) {
+    var pixel = 0;
+    players = data.players;
+    player = players[playerIndex];
+    hand = player.hand;
+    console.log('player.hand within append cards function ', player.hand);
+    var placeAtTable = setPlaceAtTable(data);
+    playerLeft = data.players[placeAtTable.playerLeftIndex];
+    playerRight = data.players[placeAtTable.playerRightIndex];
+    $('#table').append('<img width=100 src=cardImages/' + data.targetCard + '.png>');
+    $('.player-left-name').text(playerLeft.nickname + ' has '
+    + playerLeft.hand.length + ' cards.');
+    $('.player-right-name').text(playerRight.nickname + ' has '
+    + playerRight.hand.length + ' cards.');
+    $('.main-player').text(player.nickname);
+    $.each(hand, function (key, value) {
+      var index = key + 1;
+      $('#hand').append('<button class="card' + key + '" style="margin-top:2px; margin-left: '
+      + pixel + 'px; float: left; z-index: ' + index + '"><img class=card"' + key +
+      ' width=100" src=cardImages/' + value + '.png /></button>');
+
+      $('.card' + key).click(function () {
+          playCard(key, value, players, playerIndex);
+          return false;
+        });
+    });
   }
 
 });

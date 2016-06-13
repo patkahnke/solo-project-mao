@@ -9,11 +9,6 @@
     <script type="text/javascript" src="/scripts/clientapp.js"></script>
   </head>
   <body>
-    <!-- <div class=jumbotron>
-      <h2>It's a game... It's a puzzle...</h2>
-      <h2>It's...</h2>
-      <h1>Mao</h1>
-    </div> -->
     <div class="container">
       <div class="com-md-5">
       </div>
@@ -49,13 +44,17 @@
       <div class="col-md-3">
       </div>
       <div class="player-hand col-md-7">
-        <p>Cards in your hand:</p>
+        <h1 class="main-player"></h1>
         <p id="hand"></p>
       </div>
       <div class="col-md-2">
       </div>
     </div>
-    </div>
     <div>
+      <ul id="messages"></ul>
+      <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
   </body>
 </html>
