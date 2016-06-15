@@ -13,22 +13,18 @@ var index = require('./routes/index');
 var Game = require('./modules/game');
 var Table = require('./modules/table');
 var Player = require('./modules/player');
-var Messaging = require('./modules/messaging');
+var Gameplay = require('./modules/gameplay');
+var Utility = require('./modules/utility');
+var Rule = require('./modules/rule');
 
 //global game setup variables
-var messaging = new Messaging();
 var table = new Table();
 var game = new Game();
-var deck = game.deck;
-var playerLimit = table.playerLimit;
-var tableReady = false;
-var cardsOnTable = table.cardsOnTable;
+var gameplay = new Gameplay();
+var utility = new Utility();
+var rule = new Rule();
 var players = table.players;
-var targetCard = [];
-var player = {};
-var directionLeft = true;
-var directionChangeCount = game.randomNumber(5, 12);
-var playCount = 0;
+var deck = game.deck;
 
 //socket.io functions
 io.on('connection', function (socket) {
@@ -36,51 +32,11 @@ io.on('connection', function (socket) {
 
   socket.on('playerLoggedIn', function (data) {
     var player = new Player(socket.id);
-    game.seatNewPlayers(socket, table, players, data, game, deck, io, player);
+    table.seatNewPlayers(socket, table, players, data, gameplay, deck, io, player);
   });
 
-  socket.on('playCard', function (data) {
-    players = data.players;
-    var playerIndex = data.playerIndex;
-    var playerLeftIndex = data.playerLeftIndex;
-    var playerRightIndex = data.playerRightIndex;
-    targetCard = game.currentTargetCard(table)[0];
-    card = data.playedCard;
-    legal = game.isCardLegal(card, targetCard);
-    playCount++;
-    console.log('direction change count: ', directionChangeCount);
-    console.log('playCount', playCount);
-    console.log('directionLeft ', directionLeft);
-    directionLeft = game.controlDirection(game, playCount, directionChangeCount, directionLeft);
-    if (players[playerIndex].turn) {
-      if (legal == true) {
-        players[playerIndex].hand = game.playCard(data.index, players[playerIndex].hand, table);
-        targetCard = game.currentTargetCard(table)[0];
-        console.log('card is legal');
-        players[playerIndex].turn = false;
-        if (directionLeft) {
-          players[playerLeftIndex].turn = true;
-        } else {
-          players[playerRightIndex].turn = true;
-        }
-
-        table.players = players;
-        io.emit('play', { players: players, targetCard: targetCard });
-      } else {
-        players[playerIndex].hand = game.dealCards(deck, 1, players[playerIndex].hand);
-        players[playerIndex].turn = false;
-        players[data.playerLeftIndex].turn = true;
-        table.players = players;
-        console.log('card is not legal');
-        io.emit('play', { players: players, targetCard: targetCard });
-        console.log(players[playerIndex].nickname + ' played out of turn!');
-      };
-    } else {
-      players[playerIndex].hand = game.dealCards(deck, 1, players[playerIndex].hand);
-      table.players = players;
-      console.log(players[playerIndex].nickname + ' played out of turn!');
-      io.emit('play', { players: players, targetCard: targetCard });
-    };
+  socket.on('stage card', function (data) {
+    gameplay.stageCard(data, gameplay, table, rule, game, deck, io);
   });
 
   socket.on('chat message', function (msg) {

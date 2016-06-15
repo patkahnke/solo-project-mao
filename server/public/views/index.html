@@ -24,7 +24,7 @@
       <div class="player-left col-md-3">
         <h1 class="player-left-name"></h1>
       </div>
-      <div class="col-md-6">
+      <div class="communication col-md-6">
       </div>
       <div class="player-right col-md-3">
         <h1 class="player-right-name"></h1>
@@ -33,11 +33,21 @@
     <div class="container">
       <div class="col-md-5">
       </div>
-      <div class="col-md-2">
-      <h1>Dealer Card</h1>
-      <p id="table"></p>
+      <div id="dealer" class="col-md-2">
+      <h1 class="dealer-card"></h1>
+      <p class="table"></p>
       </div>
       <div class="col-md-5">
+      </div>
+    </div>
+    <div class="container">
+      <div class="col-md-3">
+      </div>
+      <div class="stage-card col-md-7">
+        <h2>One Second to Add to String</h2>
+        <p class="staging-area"></p>
+      </div>
+      <div class="col-md-2">
       </div>
     </div>
     <div class="container">
@@ -51,9 +61,10 @@
       </div>
     </div>
     <div>
-      <ul id="messages"></ul>
-      <form action="">
+      <form class="chat" action="">
+        <h3>Messages</h3>
         <input id="m" autocomplete="off" /><button>Send</button>
+        <ul id="messages"></ul>
       </form>
     </div>
   </body>

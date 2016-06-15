@@ -8,3 +8,25 @@ player-input-form {
   margin-left: auto;
   margin-right: auto
 }
+
+.chat {
+    font-size: 16px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 400px;
+    height: 400px;
+    border: 3px solid #73AD21;
+}
+
+.mao-good {
+  color: #73AD21;
+}
+
+.mao-bad-card {
+  color: red;
+}
+
+.mao-bad-turn {
+  color: brown;
+}

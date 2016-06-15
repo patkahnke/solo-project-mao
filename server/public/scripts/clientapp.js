@@ -21,7 +21,14 @@ $(document).ready(function () {
   socket.on('play', function (data) {
     clearOutCards();
     appendCardsToDOM(data);
-    console.log('socket.on play is firing');
+  });
+
+  socket.on('game over', function (players) {
+    clearOutCards();
+    $('.communication').append('<h1>GAME OVER</h1><br><h2>' + players[0].nickname + ' has ' +
+    players[0].hand.length + ' card(s) remaining.</h2><br><h2>' + players[1].nickname + ' has ' +
+    players[1].hand.length + ' card(s) remaining.</h2><br><h2>' + players[2].nickname + ' has ' +
+    players[2].hand.length + ' card(s) remaining.</h2>');
   });
 
   $('form').submit(function () {
@@ -31,7 +38,19 @@ $(document).ready(function () {
   });
 
   socket.on('chat message', function (msg) {
-    $('#messages').append($('<li>').text(msg));
+    $('#messages').prepend($('<li>').text(msg));
+  });
+
+  socket.on('mao good message', function (msg) {
+    $('#messages').prepend($('<li class="mao-good">').text(msg));
+  });
+
+  socket.on('mao bad card message', function (msg) {
+    $('#messages').prepend($('<li class="mao-bad-card">').text(msg));
+  });
+
+  socket.on('mao bad turn message', function (msg) {
+    $('#messages').prepend($('<li class="mao-bad-turn">').text(msg));
   });
 
   //create new player in database
@@ -49,10 +68,12 @@ $(document).ready(function () {
   }
 
   function clearOutCards() {
-    $('#table').text('');
-    //$('#hand').text('');
+    $('.table').empty();
+    $('.dealer-card').empty();
     $('#hand').empty();
-    console.log('clearOutCards is firing');
+    $('.player-left-name').empty();
+    $('.player-right-name').empty();
+    $('.main-player').empty();
   }
 
   function setPlaceAtTable(data) {
@@ -81,10 +102,17 @@ $(document).ready(function () {
   }
   }
 
-  function playCard(index, playedCard, players, playerIndex) {
-    socket.emit('playCard', { playedCard: playedCard, index: index, players:
+  function stageCard(index, playedCard, players, playerIndex, data) {
+    clearOutCards();
+    appendCardsToDOM(data);
+    appendStageCard(index, playedCard, players, playerIndex);
+    socket.emit('stage card', { playedCard: playedCard, index: index, players:
       players, playerIndex: playerIndex, playerLeftIndex: playerLeftIndex,
       playerRightIndex: playerRightIndex, });
+  }
+
+  function appendStageCard(index, playedCard, players, playerIndex) {
+    $('.staging-area').append('<img width=100 src=cardImages/' + data.playedCard + '.png>');
   }
 
   function appendCardsToDOM(data) {
@@ -96,7 +124,8 @@ $(document).ready(function () {
     var placeAtTable = setPlaceAtTable(data);
     playerLeft = data.players[placeAtTable.playerLeftIndex];
     playerRight = data.players[placeAtTable.playerRightIndex];
-    $('#table').append('<img width=100 src=cardImages/' + data.targetCard + '.png>');
+    $('.dealer-card').text('Dealer Card');
+    $('.table').append('<img width=100 src=cardImages/' + data.targetCard + '.png>');
     $('.player-left-name').text(playerLeft.nickname + ' has '
     + playerLeft.hand.length + ' cards.');
     $('.player-right-name').text(playerRight.nickname + ' has '
@@ -107,9 +136,8 @@ $(document).ready(function () {
       $('#hand').append('<button class="card' + key + '" style="margin-top:2px; margin-left: '
       + pixel + 'px; float: left; z-index: ' + index + '"><img class=card"' + key +
       ' width=100" src=cardImages/' + value + '.png /></button>');
-
       $('.card' + key).click(function () {
-          playCard(key, value, players, playerIndex);
+          stageCard(key, value, players, playerIndex);
           return false;
         });
     });
