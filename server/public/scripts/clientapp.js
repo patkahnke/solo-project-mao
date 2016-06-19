@@ -8,19 +8,39 @@ $(document).ready(function () {
   var playerIndex = undefined;
   var playerLeftIndex = undefined;
   var playerRightIndex = undefined;
+  var stringArray = [];
 
+  //listeners
+  //player input listener
   $('#player-input-button').on('click', function () {
     setUpPlayer(event);
     socket.emit('playerLoggedIn', { nickname: newPlayer.nickname });
   });
 
-  socket.on('getPlayerIndex', function (data) {
+  //chat listener
+  $('form').submit(function () {
+    socket.emit('chat message', player.nickname + ': ' + $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+
+  //card listener
+  // $('.card' + key).click(function () {
+  //     stageCard(key, value, players, playerIndex);
+  //     return false;
+  //   });
+
+  //socket events
+  socket.on('get player index', function (data) {
     playerIndex = data.playerIndex;
+    console.log('playerIndex:', playerIndex);
   });
 
   socket.on('play', function (data) {
     clearOutCards();
     appendCardsToDOM(data);
+    $('.dealer-card-border').hide();
+    $('.dealer-card-border').fadeIn(100);
   });
 
   socket.on('game over', function (players) {
@@ -31,26 +51,28 @@ $(document).ready(function () {
     players[2].hand.length + ' card(s) remaining.</h2>');
   });
 
-  $('form').submit(function () {
-    socket.emit('chat message', player.nickname + ': ' + $('#m').val());
-    $('#m').val('');
-    return false;
+  socket.on('stage card client', function (data) {
+    stageCard(data);
   });
 
   socket.on('chat message', function (msg) {
-    $('#messages').prepend($('<li>').text(msg));
+    $('#messages').prepend($('<li class="chat-message">').text(msg));
   });
 
   socket.on('mao good message', function (msg) {
-    $('#messages').prepend($('<li class="mao-good">').text(msg));
+    $('#messages').prepend($('<li class="chat-message mao-good">').text(msg));
   });
 
   socket.on('mao bad card message', function (msg) {
-    $('#messages').prepend($('<li class="mao-bad-card">').text(msg));
+    $('#messages').prepend($('<li class="chat-message mao-bad-card">').text(msg));
   });
 
   socket.on('mao bad turn message', function (msg) {
-    $('#messages').prepend($('<li class="mao-bad-turn">').text(msg));
+    $('#messages').prepend($('<li class="chat-message mao-bad-turn">').text(msg));
+  });
+
+  socket.on('out of turn player', function (data) {
+    $('.playerIndex' + data).append('<div class="out-of-turn">PLAYED OUT OF TURN</div>');
   });
 
   //create new player in database
@@ -73,6 +95,9 @@ $(document).ready(function () {
     $('#hand').empty();
     $('.player-left-name').empty();
     $('.player-right-name').empty();
+    $('.playerIndex' + playerIndex).remove();
+    $('.player-left-card').empty();
+    $('.player-right-card').empty();
     $('.main-player').empty();
   }
 
@@ -102,45 +127,135 @@ $(document).ready(function () {
   }
   }
 
-  function stageCard(index, playedCard, players, playerIndex, data) {
+  function stageCard(data) {
+    var playedCard = data.value;
+    var index = data.indexOfStagedPlayer;
+    var players = data.players;
     clearOutCards();
     appendCardsToDOM(data);
-    appendStageCard(index, playedCard, players, playerIndex);
-    socket.emit('stage card', { playedCard: playedCard, index: index, players:
-      players, playerIndex: playerIndex, playerLeftIndex: playerLeftIndex,
-      playerRightIndex: playerRightIndex, });
+    appendStageCard(playedCard, players, index);
   }
 
-  function appendStageCard(index, playedCard, players, playerIndex) {
-    $('.staging-area').append('<img width=100 src=cardImages/' + data.playedCard + '.png>');
+  function appendStageCard(playedCard, players, index) {
+    $('.playerIndex' + index).append('<img width=100 class="card-border" src=cardImages/'
+    + playedCard + '.png>');
+    $('.card-border').fadeIn(100);
+    $('.playerIndex' + playerIndex).children().removeClass('card-border').addClass('player-card-border');
   }
 
   function appendCardsToDOM(data) {
-    var pixel = 0;
+    var pixel = -60;
     players = data.players;
+    targetCard = data.targetCard;
     player = players[playerIndex];
+    var indexOfStagedPlayer = playerIndex;
+    console.log('player.hand before sort', player.hand);
+    player.hand = sortHand(player.hand);
+    console.log('player.hand after sort', player.hand);
     hand = player.hand;
-    console.log('player.hand within append cards function ', player.hand);
     var placeAtTable = setPlaceAtTable(data);
     playerLeft = data.players[placeAtTable.playerLeftIndex];
     playerRight = data.players[placeAtTable.playerRightIndex];
-    $('.dealer-card').text('Dealer Card');
-    $('.table').append('<img width=100 src=cardImages/' + data.targetCard + '.png>');
-    $('.player-left-name').text(playerLeft.nickname + ' has '
-    + playerLeft.hand.length + ' cards.');
-    $('.player-right-name').text(playerRight.nickname + ' has '
-    + playerRight.hand.length + ' cards.');
+    $('.dealer-card').text('Dealer');
+    $('.table').append('<img width=100 class="dealer-card-border" src=cardImages/' + data.targetCard + '.png>');
+    $('.player-left-name').append('<h1>' + playerLeft.nickname + '</h1>');
+    $('.player-left-name').append('<img width=180 src=cardImages/playing-card-backs-1.jpg>');
+    $('.player-left-name').append('<h2>Cards Left: ' + playerLeft.hand.length + '</h2>');
+    $('.player-left-card').append('<div class="playerIndex' + playerLeftIndex + '"</div>');
+    $('.player-right-name').append('<h1>' + playerRight.nickname + '</h1>');
+    $('.player-right-name').append('<img width=180 src=cardImages/playing-card-backs-1.jpg>');
+    $('.player-right-name').append('<h2>Cards Left: ' + playerRight.hand.length + '</h2>');
+    $('.player-right-card').append('<div class="playerIndex' + playerRightIndex + '" ></div>');
     $('.main-player').text(player.nickname);
+    $('.staging-area').append('<div class="playerIndex' + playerIndex + '" ></div>');
     $.each(hand, function (key, value) {
       var index = key + 1;
       $('#hand').append('<button class="card' + key + '" style="margin-top:2px; margin-left: '
       + pixel + 'px; float: left; z-index: ' + index + '"><img class=card"' + key +
       ' width=100" src=cardImages/' + value + '.png /></button>');
       $('.card' + key).click(function () {
-          stageCard(key, value, players, playerIndex);
+          var assessedCard = hand.splice(key, 1).toString();
+          stringArray = data.stringArray;
+          stringArray.push(assessedCard);
+          socket.emit('stage card', {
+            key: key,
+            value: value,
+            indexOfStagedPlayer: indexOfStagedPlayer,
+            players: players,
+            targetCard: targetCard,
+            assessedCard: assessedCard,
+            stringArray: stringArray,
+            playerLeftIndex: playerLeftIndex,
+            playerRightIndex: playerRightIndex,
+          });
           return false;
         });
     });
+  }
+
+  function sortHand(hand) {
+    var tempHandSpade = [];
+    var tempHandDiamond = [];
+    var tempHandClub = [];
+    var tempHandHeart = [];
+    var movedCard = '';
+    while (hand.length > 0) {
+      var card = hand[0];
+        console.log('hand', hand);
+      if (card.charAt(card.length - 1) === 'S') {
+        movedCard = hand.shift().toString();
+        console.log('movedCard', movedCard);
+        tempHandSpade.push(movedCard);
+        console.log('spades', tempHandSpade);
+      } else if (card.charAt(card.length - 1) === 'D') {
+        movedCard = hand.shift().toString();
+        console.log('movedCard', movedCard);
+        tempHandDiamond.push(movedCard);
+        console.log('diamonds', tempHandDiamond);
+      } else if (card.charAt(card.length - 1) === 'C') {
+        movedCard = hand.shift().toString();
+        console.log('movedCard', movedCard);
+        tempHandClub.push(movedCard);
+        console.log('clubs', tempHandClub);
+      } else {
+        movedCard = hand.shift().toString();
+        console.log('movedCard', movedCard);
+        tempHandHeart.push(movedCard);
+        console.log('heart', tempHandHeart);
+      };
+    };
+
+    while (tempHandSpade.length > 0) {
+      sortCards(tempHandSpade, hand, card);
+    };
+
+    while (tempHandDiamond.length > 0) {
+      sortCards(tempHandDiamond, hand, card);
+    };
+
+    while (tempHandClub.length > 0) {
+      sortCards(tempHandClub, hand, card);
+    };
+
+    while (tempHandHeart.length > 0) {
+      sortCards(tempHandHeart, hand);
+    };
+
+    return hand;
+  }
+
+  function sortCards(tempHand, hand) {
+    while (tempHand.length > 0) {
+      for (var j = 1; j < 14; j++) {
+        for (var i = 0; i < tempHand.length; i++) {
+          var cardNumber = parseInt(tempHand[i]);
+          if (cardNumber == j) {
+            var card = tempHand.splice(i, 1).toString();
+            hand.push(card);
+          };
+        };
+      };
+    };
   }
 
 });

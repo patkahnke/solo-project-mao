@@ -35,7 +35,9 @@ Rule.prototype.numbersMatch = function (cardNumber, cardSuit, targetCardNumber, 
   }
 };
 
-Rule.prototype.stringNumbers = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+Rule.prototype.stringNumbers = function (playedCard, targetCard) {
+  var cardNumber = parseInt(playedCard);
+  var targetCardNumber = parseInt(targetCard);
   if (cardNumber == 13) {
     if (targetCardNumber == 1 || targetCardNumber == 12) {
       return true;

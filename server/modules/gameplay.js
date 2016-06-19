@@ -4,13 +4,13 @@ var Utility = require('./utility');
 //game play variables
 var utility = new Utility();
 var tableReady = false;
-var targetCard = [];
+//var targetCard = [];
 var directionLeft = true;
 var directionChangeCount = utility.randomNumber(5, 12);
 var playCount = 1;
-var stringRule = undefined;
-var numberRule = undefined;
-var stringRule = undefined;
+var timeoutIDReset = '';
+//var stringRule = undefined;
+//var numberRule = undefined;
 
 function Gameplay() {};
 
@@ -23,9 +23,15 @@ Gameplay.prototype.dealCards = function (deck, numberOfCards, hand) {
   return hand;
 };
 
+//stage a card for one second before the next function fires
+Gameplay.prototype.stageCard = function (data, prototypeVariables) {
+  var io = prototypeVariables.io;
+  io.emit('stage card client', data);
+};
+
 //play a specific card, chosen from the hand, onto the table
-Gameplay.prototype.playCard = function (index, hand, table) {
-  var playedCard = hand.splice(index, 1);
+Gameplay.prototype.playCard = function (hand, table) {
+  var playedCard = hand.pop();
   table.cardsOnTable.push(playedCard);
   return hand;
 };
@@ -44,15 +50,17 @@ Gameplay.prototype.endGame = function (players, io) {
 };
 
 //select the first card from the deck as the beginning "play" card
-Gameplay.prototype.setUpStartTargetCard = function (deck, table) {
-  var startTargetCard = deck.splice(0, 1);
+Gameplay.prototype.setUpTargetCard = function (deck, prototypeVariables) {
+  var table = prototypeVariables.table;
+  var startTargetCard = deck.splice(0, 1).toString();
   table.cardsOnTable.push(startTargetCard);
-  return startTargetCard[0];
+  return startTargetCard;
 };
 
 //find the current "play" card in the center of the table
 Gameplay.prototype.currentTargetCard = function (table) {
   var targetCard = table.cardsOnTable[table.cardsOnTable.length - 1];
+  console.log('table.cardsOnTable insode currentTargetCard:', table.cardsOnTable);
   return targetCard;
 };
 
@@ -69,8 +77,8 @@ Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     var targetCardNumber = parseInt(targetCard);
     var targetCardSuit = targetCard.charAt(targetCard.length - 1);
     var isLegal = false;
-    suitRule = rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-    numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+    var suitRule = rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+    var numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
     if (suitRule || numberRule) {
       isLegal = true;
     };
@@ -78,7 +86,17 @@ Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     return isLegal;
   };
 
-Gameplay.prototype.controlDirection = function (game, playCount, directionChangeCount, directionLeft) {
+// function sortHand(hand) {
+//   for (var i = 0; i < hand.length; i++) {
+//     var card = hand[i];
+//     var cardNumber = parseInt(card);
+//     var cardSuit = card.charAt(card.length - 1);
+//   }
+// }
+
+
+
+Gameplay.prototype.controlDirection = function (playCount, directionChangeCount, directionLeft) {
     if (playCount % directionChangeCount == 0) {
       directionLeft = !directionLeft;
     }
@@ -86,65 +104,179 @@ Gameplay.prototype.controlDirection = function (game, playCount, directionChange
     return directionLeft;
   };
 
-Gameplay.prototype.stageCard = function (data, gameplay, table, rule, game, deck, io) {
-  players = data.players;
-  targetCard = gameplay.currentTargetCard(table)[0];
-  stringRule = rule.stringNumbers(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-  legal = gameplay.isCardLegal(data.playedCard, targetCard, rule);
-  if (players[data.playerIndex].turn) {
-    if (stringRule) {
-      io.emit('stage string card', { players: players, targetCard: targetCard });
-    } else if (legal) {
-      io.emit
-    }
+Gameplay.prototype.assessCard = function (data, prototypeVariables) {
+      resetTimeout(timeoutIDReset);
+      var stringArray = data.stringArray;
+      var indexOfStagedPlayer = data.indexOfStagedPlayer;
+      var playedCard = data.stringArray[data.stringArray.length - 1];
+      console.log('playedCard', playedCard);
+      var io = prototypeVariables.io;
+      var table = prototypeVariables.table;
+      var rule = prototypeVariables.rule;
+      var gameplay = prototypeVariables.gameplay;
+      var game = prototypeVariables.game;
+      var deck = game.deck;
+      var players = data.players;
+      var targetCard = gameplay.currentTargetCard(table);
+      var stringRule = rule.stringNumbers(playedCard, targetCard);
+      var legal = gameplay.isCardLegal(playedCard, targetCard, rule);
+      if (players[indexOfStagedPlayer].turn) {
+        if (stringRule) {
+          console.log('string array:', stringArray);
+          io.emit('mao good message', 'Mao: ' + players[indexOfStagedPlayer].nickname +
+          ' has 1 second to add to string');
+          players[indexOfStagedPlayer].hand.push(playedCard);
+          players[indexOfStagedPlayer].hand = gameplay.playCard(players[indexOfStagedPlayer].hand, table);
+          var targetCard = gameplay.currentTargetCard(table);
+          var timeoutID = setTimeout(stringCard, 1500, data, prototypeVariables, stringArray);
+          timeoutIDReset = timeoutID;
+        } else if (legal) {
+          players[indexOfStagedPlayer].turn = false;
+          var timeoutID = setTimeout(legalCard, 1500, data, prototypeVariables);
+        } else {
+          players[indexOfStagedPlayer].turn = false;
+          var timeoutID = setTimeout(illegalCard, 1500, data, prototypeVariables);
+        }
 
-    if (legal) {
-      players[data.playerIndex].hand = gameplay.playCard(data.index, players[data.playerIndex].hand, table);
-      targetCard = gameplay.currentTargetCard(table)[0];
-      console.log('card is legal');
-      players[data.playerIndex].turn = false;
-      var lastCard = gameplay.lastCard(players[data.playerIndex].hand);
-      playCount++;
-      directionLeft = gameplay.controlDirection(game, playCount, directionChangeCount, directionLeft);
-      assignTurn(directionLeft, players, data);
-      if (lastCard) {
-        gameplay.endGame(players, io);
-        return;
+      } else {
+        players[indexOfStagedPlayer].hand.push(data.assessedCard);
+        players[indexOfStagedPlayer].hand = gameplay.dealCards(deck, 1, players[indexOfStagedPlayer].hand);
+        players[indexOfStagedPlayer].cardPenalty += 1;
+        io.emit('mao bad turn message', 'Mao: ' + players[indexOfStagedPlayer].nickname +
+    ' played out of turn!');
+        io.emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray });
+        io.emit('out of turn player', indexOfStagedPlayer);
       }
-
-      //table.players = players;
-      io.emit('play', { players: players, targetCard: targetCard });
-    } else {
-      players[data.playerIndex].hand = gameplay.dealCards(deck, 1, players[data.playerIndex].hand);
-      players[data.playerIndex].turn = false;
-      playCount++;
-      directionLeft = gameplay.controlDirection(game, playCount, directionChangeCount, directionLeft);
-      assignTurn(directionLeft, players, data);
-      console.log('playcount:', playCount, 'direction change count:', directionChangeCount, 'direction left:', directionLeft);
-      //table.players = players;
-      console.log('card is not legal');
-      io.emit('mao bad card message', 'Mao: ' + players[data.playerIndex].nickname +
-    ' played an illegal card!');
-      io.emit('play', { players: players, targetCard: targetCard });
     };
-  } else {
-    players[data.playerIndex].hand = gameplay.dealCards(deck, 1, players[data.playerIndex].hand);
-    //table.players = players;
-    console.log(players[data.playerIndex].nickname + ' played out of turn!');
-    io.emit('mao bad turn message', 'Mao: ' + players[data.playerIndex].nickname +
-  ' played out of turn!');
-    io.emit('play', { players: players, targetCard: targetCard });
-  };
-};
 
 function assignTurn(directionLeft, players, data) {
   if (directionLeft) {
     players[data.playerLeftIndex].turn = true;
-    console.log('turn: ', players[data.playerLeftIndex]);
   } else {
     players[data.playerRightIndex].turn = true;
-    console.log('turn: ', players[data.playerRightIndex]);
   }
 }
+
+function resetTimeout(timeoutIDReset) {
+  clearTimeout(timeoutIDReset);
+}
+
+function legalCard(data, prototypeVariables) {
+  var players = data.players;
+  var indexOfStagedPlayer = data.indexOfStagedPlayer;
+  var table = prototypeVariables.table;
+  var gameplay = prototypeVariables.gameplay;
+  var game = prototypeVariables.game;
+  var io = prototypeVariables.io;
+  var stringScore = 0;
+  var targetCard = '';
+  var lastCard = '';
+  players[indexOfStagedPlayer].hand.push(data.assessedCard);
+  players[indexOfStagedPlayer].hand = gameplay.playCard(players[indexOfStagedPlayer].hand, table);
+  targetCard = gameplay.currentTargetCard(table);
+  lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
+  playCount++;
+  directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
+  console.log('playCOunt and directionchangeCount inside legalCard', playCount, directionChangeCount);
+  assignTurn(directionLeft, players, data);
+  console.log('data inside legalCard:', data);
+  if (data.stringArray.length > 1) {
+    for (var i = 0; i < data.stringArray.length; i++) {
+      players[indexOfStagedPlayer].stringScore += (i + 1) * 10;
+    }
+
+    players[indexOfStagedPlayer].stringScore += stringScore;
+  } else {
+    players[indexOfStagedPlayer].cardScore += 10;
+  };
+
+  data.stringArray = [];
+  io.emit('mao good message', 'Mao: ' + players[indexOfStagedPlayer].nickname +
+' played a legal card');
+  io.emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray });
+  if (lastCard) {
+    gameplay.endGame(players, io);
+    return;
+  }
+};
+
+function illegalCard(data, prototypeVariables) {
+  var players = data.players;
+  var indexOfStagedPlayer = data.indexOfStagedPlayer;
+  var table = prototypeVariables.table;
+  var gameplay = prototypeVariables.gameplay;
+  var game = prototypeVariables.game;
+  var io = prototypeVariables.io;
+  var deck = game.deck;
+  var targetCard = '';
+  targetCard = gameplay.currentTargetCard(table);
+  playCount++;
+  directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
+  console.log('playCOunt and directionchangeCount inside illegalCard', playCount, directionChangeCount);
+  assignTurn(directionLeft, players, data);
+  if (data.stringArray.length > 1) {
+    for (var i = 0; i < data.stringArray.length; i++) {
+      players[indexOfStagedPlayer].stringScore += (i + 1) * 10;
+    }
+  } else {
+    console.log('else statement is working. data.stringArray =', data.stringArray);
+  };
+
+  data.stringArray = [];
+  players[indexOfStagedPlayer].hand.push(data.assessedCard);
+  players[indexOfStagedPlayer].hand = gameplay.dealCards(deck, 1, players[indexOfStagedPlayer].hand);
+  players[indexOfStagedPlayer].cardPenalty += 1;
+  io.emit('mao bad card message', 'Mao: ' + players[indexOfStagedPlayer].nickname +
+' played an illegal card');
+  io.emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray });
+}
+
+function stringCard(data, prototypeVariables, tempStringArray) {
+  var players = data.players;
+  var indexOfStagedPlayer = data.indexOfStagedPlayer;
+  var table = prototypeVariables.table;
+  var gameplay = prototypeVariables.gameplay;
+  var game = prototypeVariables.game;
+  var io = prototypeVariables.io;
+  var assessedCard = data.assessedCard;
+  var targetCard = '';
+  targetCard = gameplay.currentTargetCard(table);
+  players[indexOfStagedPlayer].turn = false;
+  var lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
+  playCount++;
+  directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
+  console.log('playCOunt and directionchangeCount inside stringCard', playCount, directionChangeCount);
+  assignTurn(directionLeft, players, data);
+  if (data.stringArray.length > 1) {
+    for (var i = 0; i < data.stringArray.length; i++) {
+      players[indexOfStagedPlayer].stringScore += (i + 1) * 10;
+    }
+  } else {
+    players[indexOfStagedPlayer].cardScore += 10;
+  };
+
+  data.stringArray = [];
+  io.emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray });
+  if (lastCard) {
+    gameplay.endGame(players, io);
+    return;
+  }
+};
+
+  //table.players = players;
+//   io.emit('play', { players: players, targetCard: targetCard });
+// } else {
+//   players[data.playerIndex].hand = gameplay.dealCards(deck, 1, players[data.playerIndex].hand);
+//   players[data.playerIndex].turn = false;
+//   playCount++;
+//   directionLeft = gameplay.controlDirection(game, playCount, directionChangeCount, directionLeft);
+//   assignTurn(directionLeft, players, data);
+//   console.log('playcount:', playCount, 'direction change count:', directionChangeCount, 'direction left:', directionLeft);
+//   //table.players = players;
+//   console.log('card is not legal');
+//   io.emit('mao bad card message', 'Mao: ' + players[data.playerIndex].nickname +
+// ' played an illegal card!');
+//   io.emit('play', { players: players, targetCard: targetCard });
+// };
 
 module.exports = Gameplay;
