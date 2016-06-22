@@ -18,7 +18,7 @@ var Utility = require('./modules/utility');
 var Rule = require('./modules/rule');
 
 //global game setup variables
-var table = new Table();
+var table = new Table(0);
 var game = new Game();
 var gameplay = new Gameplay();
 var utility = new Utility();
@@ -26,7 +26,6 @@ var rule = new Rule();
 var players = table.players;
 var deck = game.deck;
 var prototypeVariables = {
-  table: table,
   game: game,
   gameplay: gameplay,
   utility: utility,
@@ -39,12 +38,12 @@ io.on('connection', function (socket) {
   console.log('user connected');
 
   socket.on('playerLoggedIn', function (data) {
-    var player = new Player(socket.id);
-    table.seatNewPlayers(socket, players, data, deck, player, prototypeVariables);
-  });
+      var player = new Player(socket.id);
+      table.newPlayer(table, socket, players, data, deck, player, prototypeVariables);
+    });
 
-  socket.on('chat message', function (msg) {
-    io.emit('chat message', msg);
+  socket.on('chat message', function (data) {
+    io.in(data.tableID).emit('chat message', data.msg);
   });
 
   socket.on('stage card', function (data) {
@@ -60,7 +59,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // express routes
-app.use('/players', playersDB);
+// app.use('/players', playersDB);
 app.use('/', index);
 
 // mongoose connection

@@ -9,6 +9,7 @@ $(document).ready(function () {
   var playerLeftIndex = undefined;
   var playerRightIndex = undefined;
   var stringArray = [];
+  var tableID = '';
 
   //listeners
   //player input listener
@@ -19,7 +20,7 @@ $(document).ready(function () {
 
   //chat listener
   $('form').submit(function () {
-    socket.emit('chat message', player.nickname + ': ' + $('#m').val());
+    socket.emit('chat message', { msg: player.nickname + ': ' + $('#m').val(), tableID: tableID });
     $('#m').val('');
     return false;
   });
@@ -33,22 +34,27 @@ $(document).ready(function () {
   //socket events
   socket.on('get player index', function (data) {
     playerIndex = data.playerIndex;
+    tableID = data.tableID;
     console.log('playerIndex:', playerIndex);
   });
 
   socket.on('play', function (data) {
     clearOutCards();
     appendCardsToDOM(data);
+    console.log('data inside play', data);
     $('.dealer-card-border').hide();
     $('.dealer-card-border').fadeIn(100);
   });
 
   socket.on('game over', function (players) {
     clearOutCards();
-    $('.communication').append('<h1>GAME OVER</h1><br><h2>' + players[0].nickname + ' has ' +
-    players[0].hand.length + ' card(s) remaining.</h2><br><h2>' + players[1].nickname + ' has ' +
-    players[1].hand.length + ' card(s) remaining.</h2><br><h2>' + players[2].nickname + ' has ' +
-    players[2].hand.length + ' card(s) remaining.</h2>');
+    $('.communication').append('<h1>GAME OVER</h1><br><p>' + players[0].nickname + ' has ' +
+    players[0].hand.length + ' card(s) remaining.\nCard Points: ' + players[0].cardScore + '\nString Points: '
+    + players[0].stringScore + '\nPenalties Taken: ' + players[0].cardPenalty + '</p><br><p>' + players[1].nickname + ' has ' +
+    players[1].hand.length + ' card(s) remaining.\nCard Points: ' + players[1].cardScore + '\nString Points: '
+    + players[1].stringScore + '\nPenalties Taken: ' + players[1].cardPenalty + '</p><br><p>' + players[2].nickname + ' has ' +
+    players[2].hand.length + ' card(s) remaining.\nCard Points: ' + players[2].cardScore + '\nString Points: '
+    + players[2].stringScore + '\nPenalties Taken: ' + players[2].cardPenalty);
   });
 
   socket.on('stage card client', function (data) {
@@ -90,6 +96,7 @@ $(document).ready(function () {
   }
 
   function clearOutCards() {
+    $('.mao-photo').hide();
     $('.table').empty();
     $('.dealer-card').empty();
     $('#hand').empty();
@@ -144,6 +151,8 @@ $(document).ready(function () {
   }
 
   function appendCardsToDOM(data) {
+    var table = data.table;
+    console.log('data.table inside appendCards', data.table);
     var pixel = -60;
     players = data.players;
     targetCard = data.targetCard;
@@ -178,6 +187,7 @@ $(document).ready(function () {
           stringArray = data.stringArray;
           stringArray.push(assessedCard);
           socket.emit('stage card', {
+            table: table,
             key: key,
             value: value,
             indexOfStagedPlayer: indexOfStagedPlayer,

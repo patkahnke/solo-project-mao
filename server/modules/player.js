@@ -3,7 +3,8 @@ function Player(playerID) {
   this.nickname = '';
   this.hand = [];
   this.turn = false;
-  this.maxCards = 5;
+  this.maxCards = 10;
+  this.startHand = 5;
   this.stringScore = 0;
   this.cardScore = 0;
   this.cardPenalty = 0;
