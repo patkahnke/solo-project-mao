@@ -2,30 +2,31 @@ var Utility = require('./utility');
 var utility = new Utility();
 
 function Rule() {
+
+  this.suitsMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (cardSuit === targetCardSuit) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
 };
 
-Rule.prototype.getRules = function (rule) {
-  var numberRules = [rule.numbersmatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
-  var suitRules = [rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
-  var stringRules = [];
-  var interactRules = [];
-  var turnRules = [];
-  var activeRules = [];
-  var allRules = [numberRules, suitRules, stringRules, interactRules, turnRules];
-  for (var i = 0; i < allRules.length; i++) {
-    activeRules = selectRandomRules(allRules[i], activeRules);
-  }
-
-  return activeRules;
-};
-
-Rule.prototype.suitsMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
-  if (cardSuit === targetCardSuit) {
-    return true;
-  } else {
-    return false;
-  }
-};
+// Rule.prototype.getRules = function (rule) {
+//   var numberRules = [rule.numbersmatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
+//   var suitRules = [rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
+//   var stringRules = [];
+//   var interactRules = [];
+//   var turnRules = [];
+//   var activeRules = [];
+//   var allRules = [numberRules, suitRules, stringRules, interactRules, turnRules];
+//   for (var i = 0; i < allRules.length; i++) {
+//     activeRules = selectRandomRules(allRules[i], activeRules);
+//   }
+//
+//   return activeRules;
+// };
 
 Rule.prototype.numbersMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
   if (cardNumber === targetCardNumber) {

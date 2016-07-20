@@ -263,4 +263,29 @@ function stringCard(tableData, data, prototypeVariables, tempStringArray) {
   }
 };
 
+function suitRule(suitRules) {
+  randomRule = suitRules[utility.randomNumber(0, suitRules.length - 1)];
+  return randomRule;
+}
+
+function numberRule(numberRules) {
+  randomRule = numberRules[utility.randomNumber(0, turnRules.length - 1)];
+  return randomRule;
+}
+
+function stringRule(stringRules) {
+  randomRule = stringRules[utility.randomNumber(0, stringRules.length - 1)];
+  return randomRule;
+}
+
+//  function expressionRule(expressionRules) {
+//   randomRule = expressionRules[utility.randomNumber(0, expressionRules.length - 1)];
+//   return randomRule;
+// }
+
+function turnRule(turnRules) {
+  randomRule = turnRules[utility.randomNumber(0, turnRules.length - 1)];
+  return randomRule;
+}
+
 module.exports = Gameplay;
