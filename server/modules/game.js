@@ -34,17 +34,4 @@ Game.prototype.shuffle = function (deck) {
     return deck;
   };
 
-  // Game.prototype.isCardLegal = function (card, targetCard) {
-  //     var targetCard = targetCard;
-  //     var cardNumber = parseInt(card);
-  //     var cardSuit = card.charAt(card.length - 1);
-  //     var targetCardNumber = parseInt(targetCard);
-  //     var targetCardSuit = targetCard.charAt(targetCard.length - 1);
-  //     if (cardNumber === targetCardNumber || cardSuit === targetCardSuit) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   };
-
 module.exports = Game;

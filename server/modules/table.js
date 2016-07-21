@@ -23,8 +23,6 @@ Table.prototype.newPlayer = function (tableData, socket, playersData, data, deck
     table = new Table(tableCount);
     game = new Game();
     players = table.players;
-    console.log('players inside newPlayer', players);
-    console.log('tableID', table.tableID);
     tables.push(tableCount);
     tableData = table;
     prototypeVariables.game = game;
@@ -60,7 +58,6 @@ Table.prototype.tableAvailable = function (tableData, socket, players, player, d
         var io = prototypeVariables.io;
         var table = tableData;
         socket.join(table.tableID);
-        console.log('players inside tableAvailable', players);
         if (players.length < table.playerLimit - 1) {
           players.push(player);
           io.to(player.id).emit('mao good message', 'Mao: Welcome ' + player.nickname +

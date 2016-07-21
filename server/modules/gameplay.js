@@ -1,13 +1,17 @@
 //modules
 var Utility = require('./utility');
+var Rule = require('./rule');
 
 //game play variables
 var utility = new Utility();
+var rule = new Rule();
 var tableReady = false;
 var directionLeft = true;
 var directionChangeCount = utility.randomNumber(5, 12);
 var playCount = 1;
 var timeoutIDReset = '';
+var suitRules = [rule.suitsMatch, rule.suitsSameColor];
+var suitRuleRandomNumber = utility.randomNumber(0, suitRules.length - 1);
 
 function Gameplay() {};
 
@@ -78,10 +82,12 @@ Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     var targetCardNumber = parseInt(targetCard);
     var targetCardSuit = targetCard.charAt(targetCard.length - 1);
     var isLegal = false;
-    var suitRule = rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
     var numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-    if (suitRule || numberRule) {
+    console.log('suitRule:', suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber),
+      'numberRule:', numberRule);
+    if (suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit) || numberRule) {
       isLegal = true;
+
     };
 
     return isLegal;
@@ -177,7 +183,6 @@ function legalCard(tableData, data, prototypeVariables) {
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
   console.log('playCOunt and directionchangeCount inside legalCard', playCount, directionChangeCount);
   assignTurn(directionLeft, players, data);
-  console.log('data inside legalCard:', data);
   if (data.stringArray.length > 1) {
     for (var i = 0; i < data.stringArray.length; i++) {
       players[indexOfStagedPlayer].stringScore += (i + 1) * 10;
@@ -263,13 +268,13 @@ function stringCard(tableData, data, prototypeVariables, tempStringArray) {
   }
 };
 
-function suitRule(suitRules) {
-  randomRule = suitRules[utility.randomNumber(0, suitRules.length - 1)];
+function suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) {
+  randomRule = suitRules[suitRuleRandomNumber];
   return randomRule;
 }
 
 function numberRule(numberRules) {
-  randomRule = numberRules[utility.randomNumber(0, turnRules.length - 1)];
+  randomRule = numberRules[utility.randomNumber(0, numberRules.length - 1)];
   return randomRule;
 }
 
