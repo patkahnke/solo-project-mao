@@ -10,7 +10,13 @@ var directionLeft = true;
 var directionChangeCount = utility.randomNumber(5, 12);
 var playCount = 1;
 var timeoutIDReset = '';
-var suitRules = [rule.suitsMatch, rule.suitsSameColor];
+var cardNumber = 0;
+var targetCardNumber = 0;
+var cardSuit = '';
+var targetCardSuit = '';
+var suitRules =
+  [rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit),
+  rule.suitsSameColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
 var suitRuleRandomNumber = utility.randomNumber(0, suitRules.length - 1);
 
 function Gameplay() {};
@@ -65,7 +71,6 @@ Gameplay.prototype.setUpTargetCard = function (tableData, deck, prototypeVariabl
 //find the current "play" card in the center of the table
 Gameplay.prototype.currentTargetCard = function (table) {
   var targetCard = table.cardsOnTable[table.cardsOnTable.length - 1];
-  console.log('table.cardsOnTable insode currentTargetCard:', table.cardsOnTable);
   return targetCard;
 };
 
@@ -77,17 +82,16 @@ Gameplay.prototype.currentTargetCard = function (table) {
 //check to see if a selected card in the hand is legal to play
 Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     var targetCard = targetCard;
-    var cardNumber = parseInt(card);
-    var cardSuit = card.charAt(card.length - 1);
-    var targetCardNumber = parseInt(targetCard);
-    var targetCardSuit = targetCard.charAt(targetCard.length - 1);
+    cardNumber = parseInt(card);
+    cardSuit = card.charAt(card.length - 1);
+    targetCardNumber = parseInt(targetCard);
+    targetCardSuit = targetCard.charAt(targetCard.length - 1);
     var isLegal = false;
     var numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
     console.log('suitRule:', suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber),
       'numberRule:', numberRule);
     if (suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit) || numberRule) {
       isLegal = true;
-
     };
 
     return isLegal;
@@ -181,7 +185,6 @@ function legalCard(tableData, data, prototypeVariables) {
   lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
   playCount++;
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
-  console.log('playCOunt and directionchangeCount inside legalCard', playCount, directionChangeCount);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
     for (var i = 0; i < data.stringArray.length; i++) {
@@ -216,7 +219,6 @@ function illegalCard(tableData, data, prototypeVariables) {
   targetCard = gameplay.currentTargetCard(table);
   playCount++;
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
-  console.log('playCOunt and directionchangeCount inside illegalCard', playCount, directionChangeCount);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
     for (var i = 0; i < data.stringArray.length; i++) {
@@ -250,7 +252,6 @@ function stringCard(tableData, data, prototypeVariables, tempStringArray) {
   var lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
   playCount++;
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
-  console.log('playCOunt and directionchangeCount inside stringCard', playCount, directionChangeCount);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
     for (var i = 0; i < data.stringArray.length; i++) {
