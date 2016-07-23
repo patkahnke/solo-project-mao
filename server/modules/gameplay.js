@@ -14,10 +14,7 @@ var cardNumber = 0;
 var targetCardNumber = 0;
 var cardSuit = '';
 var targetCardSuit = '';
-var suitRules =
-  [rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit),
-  rule.suitsSameColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit)];
-var suitRuleRandomNumber = utility.randomNumber(0, suitRules.length - 1);
+var suitRuleRandomNumber = utility.randomNumber(1, 2);
 
 function Gameplay() {};
 
@@ -35,7 +32,6 @@ Gameplay.prototype.dealCards = function (deck, numberOfCards, hand, maxCards) {
 //stage a card for one second before the next function fires
 Gameplay.prototype.stageCard = function (data, prototypeVariables) {
   var io = prototypeVariables.io;
-  console.log('data.table', data.table);
   var tableID = data.table.tableID;
   io.in(tableID).emit('stage card client', data);
 };
@@ -88,9 +84,9 @@ Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     targetCardSuit = targetCard.charAt(targetCard.length - 1);
     var isLegal = false;
     var numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-    console.log('suitRule:', suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber),
+    console.log('suitRule:', suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber),
       'numberRule:', numberRule);
-    if (suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit) || numberRule) {
+    if (suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) || numberRule) {
       isLegal = true;
     };
 
@@ -123,7 +119,7 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
       } else {
         var targetCard = gameplay.currentTargetCard(table);
       };
-
+      console.log('targetCard:', targetCard);
       var stringRule = rule.stringNumbers(playedCard, targetCard);
       var legal = gameplay.isCardLegal(playedCard, targetCard, rule);
       var tableID = table.tableID;
@@ -269,8 +265,14 @@ function stringCard(tableData, data, prototypeVariables, tempStringArray) {
   }
 };
 
-function suitRule(suitRules, cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) {
-  randomRule = suitRules[suitRuleRandomNumber];
+function suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) {
+  var randomRule = false;
+  if (suitRuleRandomNumber == 1) {
+    randomRule = rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  } else {
+    randomRule = rule.suitsSameColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  }
+
   return randomRule;
 }
 
