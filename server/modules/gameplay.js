@@ -15,6 +15,7 @@ var targetCardNumber = 0;
 var cardSuit = '';
 var targetCardSuit = '';
 var suitRuleRandomNumber = utility.randomNumber(1, 2);
+var numberRuleRandomNumber = utility.randomNumber(1, 2);
 
 function Gameplay() {};
 
@@ -83,10 +84,10 @@ Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     targetCardNumber = parseInt(targetCard);
     targetCardSuit = targetCard.charAt(targetCard.length - 1);
     var isLegal = false;
-    var numberRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
     console.log('suitRule:', suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber),
-      'numberRule:', numberRule);
-    if (suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) || numberRule) {
+      'numberRule:', numberRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, numberRuleRandomNumber));
+    if (suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber)
+      || numberRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, numberRuleRandomNumber)) {
       isLegal = true;
     };
 
@@ -276,8 +277,14 @@ function suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRu
   return randomRule;
 }
 
-function numberRule(numberRules) {
-  randomRule = numberRules[utility.randomNumber(0, numberRules.length - 1)];
+function numberRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, numberRuleRandomNumber) {
+  var randomRule = false;
+  if (numberRuleRandomNumber == 1) {
+    randomRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  } else {
+    randomRule = rule.numbersOddEven(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  }
+
   return randomRule;
 }
 

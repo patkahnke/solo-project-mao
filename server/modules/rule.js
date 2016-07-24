@@ -14,7 +14,7 @@ function Rule() {
       return true;
     } else {
       return false;
-    }
+    };
   };
 
   this.suitsMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
@@ -22,17 +22,27 @@ function Rule() {
       return true;
     } else {
       return false;
-    }
+    };
   };
 
-};
+  this.numbersMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (cardNumber === targetCardNumber) {
+      return true;
+    } else {
+      return false;
+    };
+  };
 
-Rule.prototype.numbersMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
-  if (cardNumber === targetCardNumber) {
-    return true;
-  } else {
-    return false;
-  }
+  this.numbersOddEven = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (cardNumber % 2 == 0 && targetCardNumber % 2 == 0) {
+      return true;
+    } else if (cardNumber % 2 == 1 && targetCardNumber % 2 == 1) {
+      return true;
+    } else {
+      return false;
+    };
+  };
+
 };
 
 Rule.prototype.stringNumbers = function (playedCard, targetCard) {
