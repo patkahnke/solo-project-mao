@@ -17,6 +17,20 @@ function Rule() {
     };
   };
 
+  this.suitsOppositeColor = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (targetCardSuit === 'H' && (cardSuit === 'S' || cardSuit === 'C')) {
+      return true;
+    } else if (targetCardSuit === 'D' && (cardSuit === 'S' || cardSuit === 'C')) {
+      return true;
+    } else if (targetCardSuit === 'C' && (cardSuit === 'D' || cardSuit === 'H')) {
+      return true;
+    } else if (targetCardSuit === 'S' && (cardSuit === 'D' || cardSuit === 'H')) {
+      return true;
+    } else {
+      return false;
+    };
+  };
+
   this.suitsMatch = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
     if (cardSuit === targetCardSuit) {
       return true;
