@@ -14,7 +14,7 @@ var cardNumber = 0;
 var targetCardNumber = 0;
 var cardSuit = '';
 var targetCardSuit = '';
-var suitRuleRandomNumber = utility.randomNumber(1, 3);
+var suitRuleRandomNumber = utility.randomNumber(1, 4);
 var numberRuleRandomNumber = utility.randomNumber(1, 2);
 
 function Gameplay() {};
@@ -272,6 +272,8 @@ function suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRu
     randomRule = rule.suitsMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   } else if (suitRuleRandomNumber == 2) {
     randomRule = rule.suitsSameColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  } else if (suitRuleRandomNumber == 3) {
+    randomRule = rule.suitsSameColorOtherSuit(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   } else {
     randomRule = rule.suitsOppositeColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   }

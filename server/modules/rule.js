@@ -3,7 +3,7 @@ var utility = new Utility();
 
 function Rule() {
 
-  this.suitsSameColor = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+  this.suitsSameColorOtherSuit = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
     if (targetCardSuit === 'H' && cardSuit === 'D') {
       return true;
     } else if (targetCardSuit === 'D' && cardSuit === 'H') {
@@ -25,6 +25,20 @@ function Rule() {
     } else if (targetCardSuit === 'C' && (cardSuit === 'D' || cardSuit === 'H')) {
       return true;
     } else if (targetCardSuit === 'S' && (cardSuit === 'D' || cardSuit === 'H')) {
+      return true;
+    } else {
+      return false;
+    };
+  };
+
+  this.suitsSameColor = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (targetCardSuit === 'H' && (cardSuit === 'D' || cardSuit === 'H')) {
+      return true;
+    } else if (targetCardSuit === 'D' && (cardSuit === 'D' || cardSuit === 'H')) {
+      return true;
+    } else if (targetCardSuit === 'C' && (cardSuit === 'S' || cardSuit === 'C')) {
+      return true;
+    } else if (targetCardSuit === 'S' && (cardSuit === 'S' || cardSuit === 'C')) {
       return true;
     } else {
       return false;
