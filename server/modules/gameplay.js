@@ -115,7 +115,7 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
       var game = prototypeVariables.game;
       var deck = game.deck;
       var players = data.players;
-      if (stringArray.length > 1) {
+      if (players[indexOfStagedPlayer].turn && stringArray.length > 1) {
         var targetCard = stringArray[stringArray.length - 2];
       } else {
         var targetCard = gameplay.currentTargetCard(table);
@@ -143,6 +143,7 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
         }
 
       } else {
+        data.stringArray = [];
         players[indexOfStagedPlayer].hand.push(data.assessedCard);
         players[indexOfStagedPlayer].hand = gameplay.dealCards(deck, 1, players[indexOfStagedPlayer].hand, players[indexOfStagedPlayer].maxCards);
         players[indexOfStagedPlayer].cardPenalty += 1;
