@@ -106,7 +106,7 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
       resetTimeout(timeoutIDReset);
       var stringArray = data.stringArray;
       var indexOfStagedPlayer = data.indexOfStagedPlayer;
-      var playedCard = data.stringArray[data.stringArray.length - 1];
+      var playedCard = data.assessedCard;
       console.log('playedCard', playedCard);
       var io = prototypeVariables.io;
       var table = data.table;
@@ -115,7 +115,10 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
       var game = prototypeVariables.game;
       var deck = game.deck;
       var players = data.players;
-      if (players[indexOfStagedPlayer].turn && stringArray.length > 1) {
+      if (players[indexOfStagedPlayer].turn) {
+        stringArray.push(playedCard);
+      };
+      if (stringArray.length > 1) {
         var targetCard = stringArray[stringArray.length - 2];
       } else {
         var targetCard = gameplay.currentTargetCard(table);

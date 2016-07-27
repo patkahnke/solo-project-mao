@@ -185,7 +185,6 @@ $(document).ready(function () {
       $('.card' + key).click(function () {
           var assessedCard = hand.splice(key, 1).toString();
           stringArray = data.stringArray;
-          stringArray.push(assessedCard);
           socket.emit('stage card', {
             table: table,
             key: key,
