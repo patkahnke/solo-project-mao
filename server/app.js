@@ -25,7 +25,7 @@ var utility = new Utility();
 var rule = new Rule();
 var players = table.players;
 var deck = game.deck;
-var prototypeVariables = {
+var sessionVariables = {
   game: game,
   gameplay: gameplay,
   utility: utility,
@@ -39,7 +39,7 @@ io.on('connection', function (socket) {
 
   socket.on('playerLoggedIn', function (data) {
       var player = new Player(socket.id);
-      table.newPlayer(table, socket, players, data, deck, player, prototypeVariables);
+      table.newPlayer(table, socket, players, data, deck, player, sessionVariables);
     });
 
   socket.on('chat message', function (data) {
@@ -47,8 +47,8 @@ io.on('connection', function (socket) {
   });
 
   socket.on('stage card', function (data) {
-    gameplay.stageCard(data, prototypeVariables);
-    gameplay.assessCard(data, prototypeVariables);
+    gameplay.stageCard(data, sessionVariables);
+    gameplay.assessCard(data, sessionVariables);
   });
 
 });

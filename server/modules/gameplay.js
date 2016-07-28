@@ -71,11 +71,6 @@ Gameplay.prototype.currentTargetCard = function (table) {
   return targetCard;
 };
 
-// Game.prototype.getRules = function (rule1, rule2) {
-//   rules = { rule1: rule1, rule2: rule2 };
-//   return rules;
-// };
-
 //check to see if a selected card in the hand is legal to play
 Gameplay.prototype.isCardLegal = function (card, targetCard, rule) {
     var targetCard = targetCard;
@@ -148,11 +143,14 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
       } else {
         data.stringArray = [];
         players[indexOfStagedPlayer].hand.push(data.assessedCard);
-        players[indexOfStagedPlayer].hand = gameplay.dealCards(deck, 1, players[indexOfStagedPlayer].hand, players[indexOfStagedPlayer].maxCards);
+        players[indexOfStagedPlayer].hand = gameplay.dealCards(deck, 1,
+        players[indexOfStagedPlayer].hand, players[indexOfStagedPlayer].maxCards);
         players[indexOfStagedPlayer].cardPenalty += 1;
-        io.in(tableID).emit('mao bad turn message', 'Mao: ' + players[indexOfStagedPlayer].nickname +
+        io.in(tableID).emit('mao bad turn message', 'Mao: ' +
+        players[indexOfStagedPlayer].nickname +
         ' played out of turn!');
-        io.in(tableID).emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray, table: table });
+        io.in(tableID).emit('play', { players: players, targetCard: targetCard, stringArray:
+        data.stringArray, table: table });
         io.in(tableID).emit('out of turn player', indexOfStagedPlayer);
       }
     };
@@ -280,7 +278,7 @@ function suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRu
     randomRule = rule.suitsSameColorOtherSuit(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   } else {
     randomRule = rule.suitsOppositeColor(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-  }
+  };
 
   return randomRule;
 }
@@ -291,7 +289,7 @@ function numberRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, numb
     randomRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   } else {
     randomRule = rule.numbersOddEven(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-  }
+  };
 
   return randomRule;
 }
