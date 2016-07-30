@@ -10,27 +10,27 @@ function Table(tableCount) {
   this.playerLimit = 3;
   this.tableID = 'table' + tableCount;
   this.full = false;
-}
 
-Table.prototype.newPlayer = function (tableData, socket, playersData, data, deck, player, sessionVariables) {
-  tableData = tableHolder;
-  var table = tableData;
-  playersData = playersHolder;
-  var players = playersData;
-  if (table.full) {
-    tableCount++;
-    console.log('tableCount', tableCount);
-    table = new Table(tableCount);
-    game = new Game();
-    players = table.players;
-    tables.push(tableCount);
-    tableData = table;
-    sessionVariables.game = game;
-    tableHolder = tableData;
-    playersHolder = players;
+  this.newPlayer = function (tableData, socket, playersData, data, deck,
+      player, sessionVariables) {
+    tableData = tableHolder;
+    var table = tableData;
+    playersData = playersHolder;
+    var players = playersData;
+    if (table.full) {
+      tableCount++;
+      table = new Table(tableCount);
+      game = new Game();
+      players = table.players;
+      tables.push(tableCount);
+      tableData = table;
+      sessionVariables.game = game;
+      tableHolder = tableData;
+      playersHolder = players;
+    };
+
+    seatNewPlayers(table, socket, players, data, deck, player, sessionVariables);
   };
-
-  table.seatNewPlayers(table, socket, players, data, deck, player, sessionVariables);
 };
 
 Table.prototype.setupTable = function (tableData, socket, deck, players, sessionVariables) {
@@ -46,12 +46,6 @@ Table.prototype.setupTable = function (tableData, socket, deck, players, session
 
     console.log('tableID inside setUpTable', table.tableID);
     io.in(table.tableID).emit('play', { targetCard: targetCard, players: players, stringArray: stringArray, table: table });
-  };
-
-Table.prototype.seatNewPlayers = function (tableData, socket, players, data, deck, player, sessionVariables) {
-    var table = tableData;
-    player.logNewPlayer(socket, player, data);
-    table.tableAvailable(table, socket, players, player, deck, sessionVariables);
   };
 
 Table.prototype.tableAvailable = function (tableData, socket, players, player, deck, sessionVariables) {
@@ -73,5 +67,11 @@ Table.prototype.tableAvailable = function (tableData, socket, players, player, d
           console.log('something did not work creating new table');
         };
       };
+
+function seatNewPlayers(tableData, socket, players, data, deck, player, sessionVariables) {
+  var table = tableData;
+  player.logNewPlayer(socket, player, data);
+  table.tableAvailable(table, socket, players, player, deck, sessionVariables);
+}
 
 module.exports = Table;

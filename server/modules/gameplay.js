@@ -31,8 +31,8 @@ Gameplay.prototype.dealCards = function (deck, numberOfCards, hand, maxCards) {
 };
 
 //stage a card for one second before the next function fires
-Gameplay.prototype.stageCard = function (data, prototypeVariables) {
-  var io = prototypeVariables.io;
+Gameplay.prototype.stageCard = function (data, sessionVariables) {
+  var io = sessionVariables.io;
   var tableID = data.table.tableID;
   io.in(tableID).emit('stage card client', data);
 };
@@ -58,7 +58,7 @@ Gameplay.prototype.endGame = function (players, io, tableID) {
 };
 
 //select the first card from the deck as the beginning "play" card
-Gameplay.prototype.setUpTargetCard = function (tableData, deck, prototypeVariables) {
+Gameplay.prototype.setUpTargetCard = function (tableData, deck, sessionVariables) {
   var table = tableData;
   var startTargetCard = deck.splice(0, 1).toString();
   table.cardsOnTable.push(startTargetCard);
@@ -97,17 +97,17 @@ Gameplay.prototype.controlDirection = function (playCount, directionChangeCount,
     return directionLeft;
   };
 
-Gameplay.prototype.assessCard = function (data, prototypeVariables) {
+Gameplay.prototype.assessCard = function (data, sessionVariables) {
       resetTimeout(timeoutIDReset);
       var stringArray = data.stringArray;
       var indexOfStagedPlayer = data.indexOfStagedPlayer;
       var playedCard = data.assessedCard;
       console.log('playedCard', playedCard);
-      var io = prototypeVariables.io;
+      var io = sessionVariables.io;
       var table = data.table;
-      var rule = prototypeVariables.rule;
-      var gameplay = prototypeVariables.gameplay;
-      var game = prototypeVariables.game;
+      var rule = sessionVariables.rule;
+      var gameplay = sessionVariables.gameplay;
+      var game = sessionVariables.game;
       var deck = game.deck;
       var players = data.players;
       if (players[indexOfStagedPlayer].turn) {
@@ -130,15 +130,15 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
           players[indexOfStagedPlayer].hand.push(playedCard);
           players[indexOfStagedPlayer].hand = gameplay.playCard(players[indexOfStagedPlayer].hand, table);
           var targetCard = gameplay.currentTargetCard(table);
-          var timeoutID = setTimeout(stringCard, 1500, table, data, prototypeVariables, stringArray);
+          var timeoutID = setTimeout(stringCard, 1500, table, data, sessionVariables, stringArray);
           timeoutIDReset = timeoutID;
         } else if (legal) {
           players[indexOfStagedPlayer].turn = false;
-          var timeoutID = setTimeout(legalCard, 1500, table, data, prototypeVariables);
+          var timeoutID = setTimeout(legalCard, 1500, table, data, sessionVariables);
         } else {
           players[indexOfStagedPlayer].turn = false;
-          var timeoutID = setTimeout(illegalCard, 1500, table, data, prototypeVariables);
-        }
+          var timeoutID = setTimeout(illegalCard, 1500, table, data, sessionVariables);
+        };
 
       } else {
         data.stringArray = [];
@@ -152,8 +152,8 @@ Gameplay.prototype.assessCard = function (data, prototypeVariables) {
         io.in(tableID).emit('play', { players: players, targetCard: targetCard, stringArray:
         data.stringArray, table: table });
         io.in(tableID).emit('out of turn player', indexOfStagedPlayer);
-      }
-    };
+  };
+}
 
 function assignTurn(directionLeft, players, data) {
   if (directionLeft) {
@@ -167,13 +167,13 @@ function resetTimeout(timeoutIDReset) {
   clearTimeout(timeoutIDReset);
 }
 
-function legalCard(tableData, data, prototypeVariables) {
+function legalCard(tableData, data, sessionVariables) {
   var players = data.players;
   var indexOfStagedPlayer = data.indexOfStagedPlayer;
   var table = tableData;
-  var gameplay = prototypeVariables.gameplay;
-  var game = prototypeVariables.game;
-  var io = prototypeVariables.io;
+  var gameplay = sessionVariables.gameplay;
+  var game = sessionVariables.game;
+  var io = sessionVariables.io;
   var stringScore = 0;
   var targetCard = '';
   var lastCard = '';
@@ -202,16 +202,16 @@ function legalCard(tableData, data, prototypeVariables) {
   if (lastCard) {
     gameplay.endGame(players, io, tableID);
     return;
-  }
-};
+  };
+}
 
-function illegalCard(tableData, data, prototypeVariables) {
+function illegalCard(tableData, data, sessionVariables) {
   var players = data.players;
   var indexOfStagedPlayer = data.indexOfStagedPlayer;
   var table = tableData;
-  var gameplay = prototypeVariables.gameplay;
-  var game = prototypeVariables.game;
-  var io = prototypeVariables.io;
+  var gameplay = sessionVariables.gameplay;
+  var game = sessionVariables.game;
+  var io = sessionVariables.io;
   var deck = game.deck;
   var targetCard = '';
   var tableID = table.tableID;
@@ -236,13 +236,13 @@ function illegalCard(tableData, data, prototypeVariables) {
   io.in(tableID).emit('play', { players: players, targetCard: targetCard, stringArray: data.stringArray, table: table });
 }
 
-function stringCard(tableData, data, prototypeVariables, tempStringArray) {
+function stringCard(tableData, data, sessionVariables, tempStringArray) {
   var players = data.players;
   var indexOfStagedPlayer = data.indexOfStagedPlayer;
   var table = tableData;
-  var gameplay = prototypeVariables.gameplay;
-  var game = prototypeVariables.game;
-  var io = prototypeVariables.io;
+  var gameplay = sessionVariables.gameplay;
+  var game = sessionVariables.game;
+  var io = sessionVariables.io;
   var assessedCard = data.assessedCard;
   var targetCard = '';
   var tableID = table.tableID;
@@ -265,8 +265,8 @@ function stringCard(tableData, data, prototypeVariables, tempStringArray) {
   if (lastCard) {
     gameplay.endGame(players, io, table);
     return;
-  }
-};
+  };
+}
 
 function suitRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, suitRuleRandomNumber) {
   var randomRule = false;
