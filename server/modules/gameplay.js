@@ -15,7 +15,7 @@ var targetCardNumber = 0;
 var cardSuit = '';
 var targetCardSuit = '';
 var suitRuleRandomNumber = utility.randomNumber(1, 4);
-var numberRuleRandomNumber = utility.randomNumber(1, 2);
+var numberRuleRandomNumber = utility.randomNumber(1, 3);
 
 function Gameplay() {};
 
@@ -287,8 +287,10 @@ function numberRule(cardNumber, cardSuit, targetCardNumber, targetCardSuit, numb
   var randomRule = false;
   if (numberRuleRandomNumber == 1) {
     randomRule = rule.numbersMatch(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
-  } else {
+  } else if (numberRuleRandomNumber == 2) {
     randomRule = rule.numbersOddEven(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
+  } else {
+    randomRule = rule.numbersPlusOrMinusTwo(cardNumber, cardSuit, targetCardNumber, targetCardSuit);
   };
 
   return randomRule;

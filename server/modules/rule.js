@@ -71,6 +71,14 @@ function Rule() {
     };
   };
 
+  this.numbersPlusOrMinusTwo = function (cardNumber, cardSuit, targetCardNumber, targetCardSuit) {
+    if (cardNumber == (targetCardNumber + 2) || cardNumber == (targetCardNumber - 2)) {
+      return true;
+    } else {
+      return false;
+    };
+  };
+
 };
 
 Rule.prototype.stringNumbers = function (playedCard, targetCard) {
