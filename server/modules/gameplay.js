@@ -7,7 +7,7 @@ var utility = new Utility();
 var rule = new Rule();
 var tableReady = false;
 var directionLeft = true;
-var directionChangeCount = utility.randomNumber(5, 12);
+var directionChangeCount = 0;
 var playCount = 1;
 var timeoutIDReset = '';
 var cardNumber = 0;
@@ -16,6 +16,7 @@ var cardSuit = '';
 var targetCardSuit = '';
 var suitRuleRandomNumber = utility.randomNumber(1, 4);
 var numberRuleRandomNumber = utility.randomNumber(1, 3);
+var turnRuleRandomNumber = utility.randomNumber(1, 2);
 
 function Gameplay() {};
 
@@ -183,6 +184,7 @@ function legalCard(tableData, data, sessionVariables) {
   targetCard = gameplay.currentTargetCard(table);
   lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
   playCount++;
+  turnRule(turnRuleRandomNumber, directionChangeCount);
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
@@ -217,6 +219,7 @@ function illegalCard(tableData, data, sessionVariables) {
   var tableID = table.tableID;
   targetCard = gameplay.currentTargetCard(table);
   playCount++;
+  turnRule(turnRuleRandomNumber, directionChangeCount);
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
@@ -250,6 +253,7 @@ function stringCard(tableData, data, sessionVariables, tempStringArray) {
   players[indexOfStagedPlayer].turn = false;
   var lastCard = gameplay.lastCard(players[indexOfStagedPlayer].hand);
   playCount++;
+  turnRule(turnRuleRandomNumber, directionChangeCount);
   directionLeft = gameplay.controlDirection(playCount, directionChangeCount, directionLeft);
   assignTurn(directionLeft, players, data);
   if (data.stringArray.length > 1) {
@@ -306,9 +310,14 @@ function stringRule(stringRules) {
 //   return randomRule;
 // }
 
-function turnRule(turnRules) {
-  randomRule = turnRules[utility.randomNumber(0, turnRules.length - 1)];
-  return randomRule;
+function turnRule(turnRuleRandomNumber, directionChangeCount) {
+  if (turnRuleRandomNumber == 1 && directionChangeCount > 0) {
+    return directionChangeCount;
+  } else if (turnRuleRandomNumber == 1) {
+    return rule.turnRandomNumber(directionChangeCount);
+  } else {
+    return rule.turnAscending(directionChangeCount);
+  };
 }
 
 module.exports = Gameplay;

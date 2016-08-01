@@ -79,6 +79,14 @@ function Rule() {
     };
   };
 
+  this.turnRandomNumber = function (directionChangeCount) {
+    return directionChangeCount = utility.randomNumber(5, 12);
+  };
+
+  this.turnAscending = function (directionChangeCount) {
+    return directionChangeCount++;
+  };
+
 };
 
 Rule.prototype.stringNumbers = function (playedCard, targetCard) {
