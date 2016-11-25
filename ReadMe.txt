@@ -1,3 +1,3 @@
 Mao - An Online Card game
 
-Created by Pat Kahnke June, 2016
+Created by Pat Kahnke June, 2016 
